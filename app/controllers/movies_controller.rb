@@ -18,11 +18,24 @@ class MoviesController < ApplicationController
     # checked hash to be used to mark the "checked" attribute of check box
     @checked = {}
     @checked_ratings.each { |x| @checked[x] = true }
+    @movies = params[:ratings] ? Movie.where(:rating => @checked_ratings) : Movie.all
     
     if params[:sort]
-      @movies = Movie.order(params[:sort]) #sort the table using order method
-    else
-      @movies = Movie.where(:rating => @checked_ratings)
+      @movies = @movies.order(params[:sort]) #sort the table using order method
+    end
+    
+    session[:sort] = params[:sort] if params[:sort]
+    session[:ratings] = params[:ratings] if params[:ratings] || params[:commit] == 'refresh'
+    
+    if !params[:sort] && !params[:rating] && session[:sort] && session[:ratings]
+      flash.keep
+      redirect_to movies_path(:sort => session[:sort], :ratings => session[:ratings])
+    elsif !params[:sort] && session[:sort]
+      flash.keep
+      redirect_to movies_path(:sort => session[:sort])
+    elsif !params[:ratings] && session[:ratings]
+      flash.keep
+      redirect_to movies_path(:ratings => session[:ratings])
     end
   end
 
