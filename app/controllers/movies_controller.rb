@@ -11,10 +11,18 @@ class MoviesController < ApplicationController
   end
 
   def index
+    # generate a collection of all rating values
+    @all_ratings = Movie.order(:rating).select(:rating).map(&:rating).uniq
+    # find the ratings that were checked by user or set initial value to include all ratings
+    @checked_ratings = params[:ratings] ? params[:ratings].keys : @all_ratings
+    # checked hash to be used to mark the "checked" attribute of check box
+    @checked = {}
+    @checked_ratings.each { |x| @checked[x] = true }
+    
     if params[:sort]
       @movies = Movie.order(params[:sort]) #sort the table using order method
     else
-      @movies = Movie.all
+      @movies = Movie.where(:rating => @checked_ratings)
     end
   end
 
